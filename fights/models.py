@@ -1,25 +1,20 @@
 from django.db import models
+from events.models import Event
+from fighters.models import Fighter
 
 # Create your models here.
-class Event(models.Model):
-    name = models.CharField(max_length=128)
-    date = models.DateField()
-    location = models.CharField(max_length=64)
-    url = models.CharField(max_length=128)
 
-class Fighter(models.Model):
-    first_name = models.CharField(max_length=32)
-    last_name = models.CharField(max_length=32)
-    nickname = models.CharField(max_length=32, null=True)
-    height = models.CharField(max_length=16, null=True)
-    weight = models.CharField(max_length=16, null=True)
-    reach = models.CharField(max_length=16, null=True)
-    stance = models.CharField(max_length=16, null=True)
-    dob = models.DateField(null=True)
-    url = models.CharField(max_length=128)
 
 class Fight(models.Model):
-    event = models.ForeignKey(Event)
+    """
+    Represents information regarding an entire fight (or bout) that occurred in an `Event`.
+    """
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="fights"
+    )
 
     bout = models.CharField(max_length=128)
     outcome = models.CharField(max_length=8)
@@ -28,18 +23,34 @@ class Fight(models.Model):
     round = models.IntegerField()
     time = models.CharField(max_length=8)
     time_format = models.CharField(max_length=32)
-    referee = models.CharField(max_length=32)
-    details = models.CharField(max_length=256)
+    referee = models.CharField(max_length=32, null=True)
+    details = models.CharField(max_length=256, null=True)
     url = models.CharField(max_length=128)
 
+    def __str__(self):
+        return self.bout
+
+
 class FightStat(models.Model):
-    fight = models.ForeignKey(Fight)
-    fighter = models.ForeignKey(Fighter)
+    """
+    Represents statistics for a `Fighter` in a single round of a `Fight`.
+    """
+
+    fight = models.ForeignKey(
+        Fight,
+        on_delete=models.CASCADE,
+        related_name="stats"
+    )
+    fighter = models.ForeignKey(
+        Fighter,
+        on_delete=models.CASCADE,
+        related_name="stats"
+    )
 
     knockdowns = models.IntegerField()
     submission_attempts = models.IntegerField()
     reversals = models.IntegerField()
-    control_time = models.CharField(max_length=8)
+    control_time = models.IntegerField()
     takedowns = models.IntegerField()
     takedowns_attempted = models.IntegerField()
 
@@ -59,4 +70,6 @@ class FightStat(models.Model):
     clinch_strikes_attempted = models.IntegerField()
     ground_strikes = models.IntegerField()
     ground_strikes_attemped = models.IntegerField()
-    
+
+    def __str__(self):
+        return f"{self.fighter} stats for {self.fight.bout}: round {self.fight.round}"
