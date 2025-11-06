@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <title>Past UFC Events</title>
+    <link rel="stylesheet" href="{% static 'events/style.css' %}">
+</head>
+<body>
+    <div class="events-wrapper">
+        <h1>Most Recent UFC Events</h1>
+
+        {% if past_events %}
+            <div class="events-container">
+                {% for event in past_events %}
+                    <div class="event">
+                        <h2><a href="{{ event.url }}">{{ event.name }}</a></h2>
+                        <p><strong>Date:</strong> {{ event.date }}</p>
+                        <p><strong>Location:</strong> {{ event.location }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No events found in the database.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

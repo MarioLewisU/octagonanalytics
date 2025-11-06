@@ -1,0 +1,53 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 20px;
+
+    display: flex;
+    justify-content: flex-end; /* push everything to the right */
+}
+
+.events-wrapper {
+    display: flex;
+    flex-direction: column; /* stack heading + events vertically */
+    align-items: flex-end;  /* everything to the right */
+}
+
+.events-wrapper h1 {
+    font-size: 25px; /* adjust to whatever size you like */
+    margin-bottom: 15px; /* optional, to reduce spacing under it */
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.events-container {
+    display: flex;
+    flex-direction: column; /* stack cards vertically */
+    gap: 15px; /* spacing between cards */
+}
+
+.event {
+    background-color: #fff;
+    padding: 15px;
+    width: 300px; /* fixed width */
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.event h2 a {
+    text-decoration: none;
+    color: #e53935; /* red color for links */
+}
+
+.event h2 a:hover {
+    text-decoration: underline;
+}
+
+.event p {
+    margin: 5px 0;
+    color: #000; /* black text */
+}
