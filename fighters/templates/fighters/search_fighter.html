@@ -11,31 +11,61 @@
 
         <form id="searchForm" action="{% url 'search_fighter' %}" method="get">
             <input type="text" id="fighterSearch" name="q" placeholder="Enter fighter name"
-                   style="padding:10px; width:300px; margin-bottom:10px;">
+                   style="padding:10px; width:300px; margin-bottom:10px; color:black; background:white;">
         </form>
 
         <div id="suggestions" style="border:1px solid #ccc; width:300px; background:white; position:relative; z-index:100;"></div>
 
         <!-- Search Results -->
         {% if fighters %}
-            <div style="margin-top:20px; width:300px;">
+            <div style="margin-top:20px;">
                 {% for fighter in fighters %}
-                    <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:5px;">
-                        <h2>{{ fighter.first_name }} {{ fighter.last_name }}</h2>
-                        {% if fighter.nickname %}<p>Nickname: {{ fighter.nickname }}</p>{% endif %}
-                        {% if fighter.height %}<p>Height: {{ fighter.height }}</p>{% endif %}
-                        {% if fighter.weight %}<p>Weight: {{ fighter.weight }}</p>{% endif %}
-                        {% if fighter.reach %}<p>Reach: {{ fighter.reach }}</p>{% endif %}
-                        {% if fighter.stance %}<p>Stance: {{ fighter.stance }}</p>{% endif %}
-                        {% if fighter.dob %}<p>DOB: {{ fighter.dob }}</p>{% endif %}
-                        <p><a href="{{ fighter.url }}" target="_blank">UFC Profile</a></p>
-                    </div>
-                {% endfor %}
-            </div>
-        {% elif query %}
-            <p>No fighters found for "{{ query }}"</p>
-        {% endif %}
-    </div>
+                    <div style="display:flex; border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:5px;">
+
+                        <!-- Fighter Info -->
+                        <div style="flex:1; padding-right:10px; border-right:1px solid #eee;">
+                            <h2>{{ fighter.first_name }} {{ fighter.last_name }}</h2>
+                            {% if fighter.nickname %}<p>Nickname: {{ fighter.nickname }}</p>{% endif %}
+                            {% if fighter.height %}<p>Height: {{ fighter.height }}</p>{% endif %}
+                            {% if fighter.weight %}<p>Weight: {{ fighter.weight }}</p>{% endif %}
+                            {% if fighter.reach %}<p>Reach: {{ fighter.reach }}</p>{% endif %}
+                            {% if fighter.stance %}<p>Stance: {{ fighter.stance }}</p>{% endif %}
+                            {% if fighter.dob %}<p>DOB: {{ fighter.dob }}</p>{% endif %}
+                            <p><a href="{{ fighter.url }}" target="_blank">UFC Profile</a></p>
+                        </div>
+
+                        <!-- Stats -->
+                        <div style="flex:1; padding-left:10px;">
+                            {% if fighter.fight_stats %}
+                                <div style="border:1px solid #ddd; padding:10px; border-radius:5px; background:#333; color:white;">
+                                    <h3 style="margin-top:0; margin-bottom:10px;">Career Stats</h3>
+                                    <p><strong>Knockdowns:</strong> {{ fighter.fight_stats.total_kd }}</p>
+                                    <p><strong>Significant Strikes:</strong> {{ fighter.fight_stats.total_sig }} / {{ fighter.fight_stats.total_sig_att }}</p>
+                                    <p><strong>Head Strikes:</strong> {{ fighter.fight_stats.head_strikes }} / {{ fighter.fight_stats.head_strikes_attempted }}</p>
+                                    <p><strong>Body Strikes:</strong> {{ fighter.fight_stats.body_strikes }} / {{ fighter.fight_stats.body_strikes_attempted }}</p>
+                                    <p><strong>Leg Strikes:</strong> {{ fighter.fight_stats.leg_strikes }} / {{ fighter.fight_stats.leg_strikes_attemped }}</p>
+                                    <p><strong>Distance Strikes:</strong> {{ fighter.fight_stats.distance_strikes }} / {{ fighter.fight_stats.distance_strikes_attempted }}</p>
+                                    <p><strong>Clinch Strikes:</strong> {{ fighter.fight_stats.clinch_strikes }} / {{ fighter.fight_stats.clinch_strikes_attempted }}</p>
+                                    <p><strong>Ground Strikes:</strong> {{ fighter.fight_stats.ground_strikes }}</p>
+                                    <p><strong>Takedowns:</strong> {{ fighter.fight_stats.total_td }} / {{ fighter.fight_stats.total_td_att }}</p>
+                                    <p><strong>Control Time:</strong> {{ fighter.fight_stats.total_ctrl }} seconds</p>
+                                    <p><strong>Submission Attempts</strong>: {{ fighter.fight_stats.submission_attempts }}</p>
+                                    <p><strong>Reversals</strong>: {{ fighter.fight_stats.reversals }}</p>
+                            {% else %}
+                                <p>No stats available</p>
+                            {% endif %}
+
+                            <a href="{% url 'past_events' %}" 
+                                style="display:inline-block; margin-top:10px; padding:8px 12px; background:#555; color:white; text-decoration:none; border-radius:4px;">
+                                    ← Back to Past Events
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% elif query %}
+                <p>No fighters found for "{{ query }}"</p>
+            {% endif %}
 
 <script>
 document.getElementById("fighterSearch").addEventListener("input", function() {

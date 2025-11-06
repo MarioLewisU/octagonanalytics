@@ -6,9 +6,13 @@ body {
 }
 
 #fighterSearch {
-    color: rgb(255, 254, 254);
-    font-weight: bold;
+    color: black;           /* Text color */
+    background-color: white; /* Input background */
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 300px;
 }
+
 
 #suggestions {
     border: 1px solid #e53935;

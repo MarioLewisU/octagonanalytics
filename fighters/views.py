@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from fighters.models import Fighter
+from fights.models import FightStat
 from django.db.models import Q
 
 def search_fighter(request):
@@ -8,20 +9,48 @@ def search_fighter(request):
     fighters = []
 
     if query:
-        # Split query into words
         parts = query.split()
         if len(parts) == 1:
-            # Search by first OR last name
             fighters = Fighter.objects.filter(first_name__icontains=parts[0]) | Fighter.objects.filter(last_name__icontains=parts[0])
         elif len(parts) >= 2:
-            # Search by first AND last name
             fighters = Fighter.objects.filter(first_name__icontains=parts[0], last_name__icontains=parts[1])
 
+    # Attach stats to each fighter
+    for fighter in fighters:
+        stats_qs = FightStat.objects.filter(fighter=fighter)
+        if stats_qs.exists():
+            fighter.fight_stats = {
+            "total_kd": sum(s.knockdowns for s in stats_qs),
+            "total_sig": sum(s.sig_strikes for s in stats_qs),
+            "total_sig_att": sum(s.sig_strikes_attempted for s in stats_qs),
+            "total_td": sum(s.takedowns for s in stats_qs),
+            "total_td_att": sum(s.takedowns_attempted for s in stats_qs),
+            "total_ctrl": sum(s.control_time for s in stats_qs),
+            "submission_attempts": sum(s.submission_attempts for s in stats_qs),
+            "reversals": sum(s.reversals for s in stats_qs),
+            "head_strikes": sum(s.head_strikes for s in stats_qs),
+            "head_strikes_attempted": sum(s.head_strikes_attempted for s in stats_qs),
+            "body_strikes": sum(s.body_strikes for s in stats_qs),
+            "body_strikes_attempted": sum(s.body_strikes_attempted for s in stats_qs),
+            "leg_strikes": sum(s.leg_strikes for s in stats_qs),
+            "leg_strikes_attempted": sum(s.leg_strikes_attemped for s in stats_qs),
+            "distance_strikes": sum(s.distance_strikes for s in stats_qs),
+            "distance_strikes_attempted": sum(s.distance_strikes_attempted for s in stats_qs),
+            "clinch_strikes": sum(s.clinch_strikes for s in stats_qs),
+            "clinch_strikes_attempted": sum(s.clinch_strikes_attempted for s in stats_qs),
+            "ground_strikes": sum(s.ground_strikes for s in stats_qs),
+            "ground_strikes_attempted": sum(s.ground_strikes_attemped for s in stats_qs),
+        }
+        else:
+            fighter.fight_stats = None
+
+
     context = {
-        'fighters': fighters,
-        'query': query
+        "fighters": fighters,
+        "query": query,
     }
     return render(request, 'fighters/search_fighter.html', context)
+
 
 def fighter_results(request):
     query = request.GET.get("q", "")
@@ -32,6 +61,7 @@ def fighter_results(request):
     )
     
     return render(request, "fighters/fighter_results.html", {"fighters": fighters, "query": query})
+
 
 def autocomplete_fighters(request):
     query = request.GET.get('q', '')
