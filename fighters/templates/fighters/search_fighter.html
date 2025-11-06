@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Fighter</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'fighters/style.css' %}">
+</head>
+<body>
+    <div style="display:flex; flex-direction:column; align-items:center; margin-top:50px;">
+        <h1>Search for a UFC Fighter</h1>
+
+        <form id="searchForm" action="{% url 'search_fighter' %}" method="get">
+            <input type="text" id="fighterSearch" name="q" placeholder="Enter fighter name"
+                   style="padding:10px; width:300px; margin-bottom:10px;">
+        </form>
+
+        <div id="suggestions" style="border:1px solid #ccc; width:300px; background:white; position:relative; z-index:100;"></div>
+
+        <!-- Search Results -->
+        {% if fighters %}
+            <div style="margin-top:20px; width:300px;">
+                {% for fighter in fighters %}
+                    <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:5px;">
+                        <h2>{{ fighter.first_name }} {{ fighter.last_name }}</h2>
+                        {% if fighter.nickname %}<p>Nickname: {{ fighter.nickname }}</p>{% endif %}
+                        {% if fighter.height %}<p>Height: {{ fighter.height }}</p>{% endif %}
+                        {% if fighter.weight %}<p>Weight: {{ fighter.weight }}</p>{% endif %}
+                        {% if fighter.reach %}<p>Reach: {{ fighter.reach }}</p>{% endif %}
+                        {% if fighter.stance %}<p>Stance: {{ fighter.stance }}</p>{% endif %}
+                        {% if fighter.dob %}<p>DOB: {{ fighter.dob }}</p>{% endif %}
+                        <p><a href="{{ fighter.url }}" target="_blank">UFC Profile</a></p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% elif query %}
+            <p>No fighters found for "{{ query }}"</p>
+        {% endif %}
+    </div>
+
+<script>
+document.getElementById("fighterSearch").addEventListener("input", function() {
+    let query = this.value;
+
+    if (query.length < 2) {
+        document.getElementById("suggestions").innerHTML = "";
+        return;
+    }
+
+    fetch(`/fighters/autocomplete/?q=` + query)
+        .then(response => response.json())
+        .then(data => {
+            let html = "";
+            data.forEach(name => {
+                html += `<div style="padding:8px; cursor:pointer; border-bottom:1px solid #eee;"
+                            onclick="selectFighter('${name}')">${name}</div>`;
+            });
+            document.getElementById("suggestions").innerHTML = html;
+        });
+});
+
+function selectFighter(name) {
+    document.getElementById("fighterSearch").value = name;
+    document.getElementById("suggestions").innerHTML = "";
+    document.getElementById("searchForm").submit();
+}
+</script>
+
+</body>
+</html>

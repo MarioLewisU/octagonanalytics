@@ -1,0 +1,35 @@
+body {
+    background-color: #333; /* dark grey background */
+    font-family: Arial, sans-serif;
+    color: #fff; /* default text white */
+    text-align: center;
+}
+
+#fighterSearch {
+    color: rgb(255, 254, 254);
+    font-weight: bold;
+}
+
+#suggestions {
+    border: 1px solid #e53935;
+    background-color: #e53935;
+    max-width: 300px;
+    margin: auto;
+    border-radius: 6px;
+}
+
+#suggestions div {
+    padding: 10px;
+    cursor: pointer;
+    color: black;
+    border-bottom: 1px solid #b71c1c;
+}
+
+#suggestions div:last-child {
+    border-bottom: none;
+}
+
+#suggestions div:hover {
+    background-color: black;
+    color: #e53935;
+}

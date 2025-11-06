@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fighter Results</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'fighters/style.css' %}">
+</head>
+<body>
+    <div class="events-wrapper" style="align-items: flex-start;">
+        <h1 style="font-size: 24px;">Search Results for "{{ query }}"</h1>
+
+        {% if fighters %}
+            <div class="events-container">
+                {% for fighter in fighters %}
+                    <div class="event">
+
+                        <h2>{{ fighter.first_name }} {{ fighter.last_name }}</h2>
+
+                        {% if fighter.nickname %}
+                            <p><strong>Nickname:</strong> "{{ fighter.nickname }}"</p>
+                        {% endif %}
+
+                        {% if fighter.height %}
+                            <p><strong>Height:</strong> {{ fighter.height }}</p>
+                        {% endif %}
+
+                        {% if fighter.weight %}
+                            <p><strong>Weight:</strong> {{ fighter.weight }}</p>
+                        {% endif %}
+
+                        {% if fighter.reach %}
+                            <p><strong>Reach:</strong> {{ fighter.reach }}</p>
+                        {% endif %}
+
+                        {% if fighter.stance %}
+                            <p><strong>Stance:</strong> {{ fighter.stance }}</p>
+                        {% endif %}
+
+                        {% if fighter.dob %}
+                            <p><strong>Date of Birth:</strong> {{ fighter.dob }}</p>
+                        {% endif %}
+
+                        <p><a href="{{ fighter.url }}" target="_blank">UFC Profile</a></p>
+
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No fighters found.</p>
+            {% endif %}
+
+    </div>
+</body>
+</html>
+

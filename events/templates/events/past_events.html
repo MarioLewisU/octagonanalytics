@@ -6,22 +6,38 @@
     <link rel="stylesheet" href="{% static 'events/style.css' %}">
 </head>
 <body>
-    <div class="events-wrapper">
-        <h1>Most Recent UFC Events</h1>
 
-        {% if past_events %}
-            <div class="events-container">
-                {% for event in past_events %}
-                    <div class="event">
-                        <h2><a href="{{ event.url }}">{{ event.name }}</a></h2>
-                        <p><strong>Date:</strong> {{ event.date }}</p>
-                        <p><strong>Location:</strong> {{ event.location }}</p>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p>No events found in the database.</p>
-        {% endif %}
+    <!-- ✅ Wrapper to reset layout so button can stay left -->
+    <div style="width:100%;">
+
+        <div style="display:flex; justify-content:flex-start;">
+            <button onclick="window.location.href='/fighters/'"
+                    style="padding: 10px 20px; margin-bottom: 20px;
+                    background-color:#e53935; color:white; border:none;
+                    border-radius:5px; cursor:pointer;">
+                Search Fighter
+            </button>
+        </div>
+
+        <!-- your original events wrapper -->
+        <div class="events-wrapper">
+            <h1>Most Recent UFC Events</h1>
+            {% if past_events %}
+                <div class="events-container">
+                    {% for event in past_events %}
+                        <div class="event">
+                            <h2><a href="{{ event.url }}">{{ event.name }}</a></h2>
+                            <p><strong>Date:</strong> {{ event.date }}</p>
+                            <p><strong>Location:</strong> {{ event.location }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No events found in the database.</p>
+            {% endif %}
+        </div>
+
     </div>
+
 </body>
 </html>
