@@ -162,16 +162,40 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "DEBUG")
+LOG_FILE_DIR = BASE_DIR / 'logs'
+
+if not LOG_FILE_DIR.exists():
+    LOG_FILE_DIR.mkdir()
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "console": {
+            "format": '[%(asctime)22.22s %(levelname)s] {%(module)s:%(funcName)s} %(message)s'
+        },
+        'json': {
+            '()': 'pythonjsonlogger.jsonlogger.JsonFormatter',
+            'format': '%(asctime)s %(module)s %(funcName)s %(levelname)s %(message)s',
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "console",
+            'level': LOG_LEVEL
         },
+        "file": {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_FILE_DIR / 'octagonanalytics.log',
+            'maxBytes': 5 * 1024 * 1024,
+            'backupCount': 5,
+            'formatter': 'json',
+            'level': 'INFO'
+        }
     },
     "root": {
-        "handlers": ["console"],
-        "level": os.getenv("DJANGO_LOG_LEVEL", "DEBUG"),
+        "handlers": ["console", "file"],
     },
 }

@@ -1,5 +1,5 @@
 from octagonanalytics.settings import BASE_DIR
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.db.models.functions import Concat
 from django.db.models import Value
 from events.models import Event
@@ -8,6 +8,7 @@ from fights.models import Fight, FightStat
 from typing import Any
 from datetime import datetime
 from collections import defaultdict
+import json
 import requests
 import logging
 import os
@@ -16,12 +17,10 @@ import numpy as np
 import re
 
 # TODO:
-# - load fight stats
+# - handle skipping duplicate fight stats
 # - order events by date before insertion
-# - error handling
 # - add args
 #   - clear tables before loading
-#   - process csvs only (no DB interaction)
 
 logger = logging.getLogger(__name__)
 DATA_DIR = BASE_DIR / "load_database"
@@ -80,16 +79,36 @@ def _parse_time(time_string: str | None):
 class Command(BaseCommand):
     help = "Scrape and load UFC data into the database."
 
+    # def add_arguments(self, parser: CommandParser) -> None:
+    #     parser.add_argument(
+    #         '--clear-tables',
+    #         help='Delete all existing records from the database before processing data. THIS ACTION IS PERMANENT.',
+    #         action='store_false',
+    #     )
+
+    #     parser.add_argument(
+    #         '--process-only',
+    #         help='Only process and prepare raw data, does not insert any records into the database.',
+    #         action='store_false',
+    #     )
+
     def handle(self, *args: Any, **options: Any) -> str | None:
-        # try:
-        # self.ensure_folders()
-        # self.download_raw_data()
-        # self.process_raw_data()
-        # self.load_database()
-        self.load_fight_stats()
-        # except:
-        #     return "BAD"
-        # return "GOOD"
+        logger.info(
+            f'Beginning database update with args: {json.dumps(options)}')
+
+        try:
+            self.ensure_folders()
+            self.download_raw_data()
+            self.process_raw_data()
+
+            # if options['process-only']:
+            #     logger.info('Completed processing UFC data')
+            #     return
+
+            self.load_database()
+        except Exception as err:
+            logger.error(f'Error occurred while updating data: {err}')
+        logger.info('Database update complete')
 
     def ensure_folders(self):
         """
@@ -108,8 +127,6 @@ class Command(BaseCommand):
         """
         Download the raw csv data files from the scraper source.
         """
-        logger.debug("downloading raw ufc data")
-
         files = [
             "ufc_event_details.csv",
             "ufc_fight_details.csv",
@@ -125,13 +142,11 @@ class Command(BaseCommand):
             with open(_raw_data_path(fname), 'wb') as f:
                 f.write(response.content)
 
-        logger.debug("finished downloading raw ufc data")
-
     def process_raw_data(self):
         """
         Manipulate raw csv data to fit the constraints of our database.
         """
-        logger.debug("processing raw UFC data")
+        logger.debug("Processing raw UFC data...")
 
         self.process_raw_fighter_data()
         self.process_raw_event_data()
@@ -139,11 +154,12 @@ class Command(BaseCommand):
         self.process_raw_fight_stats()
         self.cleanup_raw_data()
 
+        logger.debug("Completed processing raw UFC data")
+
     def process_raw_fighter_data(self):
         """
-        Combine raw UFC fighter details and tail of the tape (tott) data.
+        Combines raw UFC fighter details and tail of the tape (tott) data.
         """
-
         df_details = pd.read_csv(_raw_data_path("ufc_fighter_details.csv"))
         df_tott = pd.read_csv(_raw_data_path("ufc_fighter_tott.csv"))
 
@@ -159,9 +175,8 @@ class Command(BaseCommand):
 
     def process_raw_event_data(self):
         """
-
+        Formats raw event details data.
         """
-
         df_events = pd.read_csv(_raw_data_path("ufc_event_details.csv"))
 
         df_events.rename(columns={'EVENT': 'NAME'}, inplace=True)
@@ -172,7 +187,6 @@ class Command(BaseCommand):
         """
         Combines raw fight details and results.
         """
-
         df_fight_details = pd.read_csv(_raw_data_path("ufc_fight_details.csv"))
         df_fight_results = pd.read_csv(_raw_data_path("ufc_fight_results.csv"))
 
@@ -189,9 +203,8 @@ class Command(BaseCommand):
 
     def process_raw_fight_stats(self):
         """
-
+        Formats and manipulates raw fight stats data.
         """
-
         df_fight_stats = pd.read_csv(_raw_data_path("ufc_fight_stats.csv"))
 
         rename_cols = {
@@ -267,7 +280,7 @@ class Command(BaseCommand):
 
     def cleanup_raw_data(self):
         """
-        Clean up various inconsistencies and do a final formatting run on all raw data files.
+        Clean up various inconsistencies and performs a final formatting pass on all raw data.
         """
 
         files = [
@@ -296,6 +309,8 @@ class Command(BaseCommand):
         """
         Load entities into the database from the processed UFC data.
         """
+        logger.debug(
+            'Beginning to insert entities into database from processed UFC data...')
         self.load_events()
         self.load_fighters()
         self.load_fights()
@@ -329,7 +344,6 @@ class Command(BaseCommand):
         """
         Create and save fighter entities to the database.
         """
-
         logger.debug("Loading fighters...")
 
         df_fighters = pd.read_csv(_out_data_path("fighters.csv"))
@@ -363,7 +377,6 @@ class Command(BaseCommand):
         """
         Create and save fight entities to the database.
         """
-
         logger.debug("Loading fights...")
 
         df_fights = pd.read_csv(_out_data_path("fights.csv"))
@@ -409,13 +422,14 @@ class Command(BaseCommand):
         """
         Create and save fightstat entities to the database.
         """
-
         logger.debug("Loading fight stats...")
 
         df_fight_stats = pd.read_csv(_out_data_path("fight_stats.csv"))
         df_fight_stats.replace({np.nan: None}, inplace=True)
 
         # Group stats by { event: bout: fighter: [stats] }
+        # Looking up fights by bout name only is not reliable since there could be multiple
+        # instances of the same matchup (i.e. "Khabib Nurmagomedov vs. Conor McGregor")
         stats_data_grouped: dict[str, dict[str, dict[str, list[Any]]]] = {}
         for (event, bout, fighter), group in df_fight_stats.groupby(["event", "bout", "fighter"]):
             stats_data_grouped.setdefault(event, {}).setdefault(
@@ -425,13 +439,24 @@ class Command(BaseCommand):
         fighters_cache: dict[str, Fighter] = {}
 
         def get_fighter(name: str):
+            # Check cache first
             fighter = fighters_cache.get(name)
             if fighter:
                 return fighter
 
-            logger.debug(f"Querying for fighter {name}")
-            fighter = Fighter.objects.annotate(full_name_q=Concat(
-                'first_name', Value(' '), 'last_name')).get(full_name_q__iexact=name)
+            # Query database for fighter by full name
+            try:
+                fighter = Fighter.objects.annotate(full_name_q=Concat(
+                    'first_name', Value(' '), 'last_name')).get(full_name_q__iexact=name)
+            except Fighter.MultipleObjectsReturned:
+                # Currently fight stats only identify the fighter by name, so if multiple fighters share
+                # the same full name, there is no way to distinguish them
+                logger.warning(
+                    f'Query returned multiple fighters with name: {name}')
+                return
+            except:
+                logger.warning(f'Could not locate fighter with name: {name}')
+                return
 
             fighters_cache[name] = fighter
             return fighter
@@ -454,6 +479,11 @@ class Command(BaseCommand):
                 # Create stat entities for each fighter
                 for fighter_name, fighter_stats_data in stats_data.items():
                     fighter_entity = get_fighter(fighter_name)
+
+                    if not fighter_entity:
+                        logger.warning(
+                            f'Could not locate fighter: "{fighter_name}", skipping creation of {len(fighter_stats_data)} fight stats')
+                        continue
 
                     new_stats_for_fighter = [FightStat(
                         fight=fight_entity,
@@ -489,7 +519,3 @@ class Command(BaseCommand):
 
             logger.debug(f"Creating {len(new_stats)} stats for {event_name}")
             FightStat.objects.bulk_create(new_stats)
-
-        # Group fight stats data by (event name, bout name)
-        # Looking up fights by bout name only is not reliable since there could be multiple
-        # instances of the same matchup (i.e. "Khabib Nurmagomedov vs. Conor McGregor")
