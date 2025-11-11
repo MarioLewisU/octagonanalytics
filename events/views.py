@@ -9,4 +9,4 @@ def past_events(request):
         'past_events': past_events
     }
 
-    return render(request, 'events/past_events.html', context)
+    return render(request, 'events/home.html', context)
