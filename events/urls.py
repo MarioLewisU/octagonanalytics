@@ -19,5 +19,5 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.past_events, name='past_events')
+    path('', views.events_home, name='events_home'),
 ]
