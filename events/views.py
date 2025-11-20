@@ -1,40 +1,44 @@
 from django.shortcuts import render
 from events.models import Event
-from fighters.models import Fighter
+import json
+import os
+from django.conf import settings
 
-def events_home(request):
-    past_events = Event.objects.order_by('-date')[:5]
-
-    # Hardcoded upcoming event info
-    event_name = "UFC 322: Della Maddalena vs Makhachev"
-    event_date = "November 15th, 2025"
-    event_location = "New York: Madison Square Garden"
-
-    # Define the fighters for each fight
-    fighters_data = [
-        (("Jack", "Della Maddalena"), ("Islam", "Makhachev")),
-        (("Valentina", "Shevchenko"), ("Zhang", "Weili")),
-        (("Sean", "Brady"), ("Michael", "Morales")),
-        (("Leon", "Edwards"), ("Carlos", "Prates")),
-        (("Beneil", "Dariush"), ("Benoit", "Saint Denis")),
-    ]
-
+def home_events(request):
+    # past 10 events
+    past_events = Event.objects.order_by('-date')[:10]
+    
+    # upcoming events for json
+    event_name = None
+    event_date = None
+    event_location = None
     fights = []
-    for f1, f2 in fighters_data:
-        try:
-            fighter1 = Fighter.objects.get(first_name=f1[0], last_name=f1[1])
-            fighter2 = Fighter.objects.get(first_name=f2[0], last_name=f2[1])
-            fights.append({"fighter1": fighter1, "fighter2": fighter2})
-        except Fighter.DoesNotExist:
-            # Skip this fight if a fighter is missing
-            continue
-
+    
+    json_file_path = os.path.join(settings.BASE_DIR, 'next_event.json')
+    
+    try:
+        with open(json_file_path, 'r') as f:
+            event_data = json.load(f)
+        
+        event_name = event_data.get('name', 'No event found')
+        event_date = event_data.get('date', 'TBD')
+        event_location = event_data.get('location', 'TBD')
+        fights = event_data.get('fights', [])
+        
+        print(f"Loaded upcoming event: {event_name}")
+        print(f"Number of fights: {len(fights)}")
+        
+    except FileNotFoundError:
+        print("next_event.json file not found")
+    except Exception as e:
+        print(f"Error loading JSON: {e}")
+    
     context = {
-        "past_events": past_events,
-        "event_name": event_name,
-        "event_date": event_date,
-        "event_location": event_location,
-        "fights": fights,
+        'event_name': event_name,
+        'event_date': event_date,
+        'event_location': event_location,
+        'fights': fights,
+        'past_events': past_events
     }
 
-    return render(request, "events/home.html", context)
+    return render(request, 'events/home.html', context)

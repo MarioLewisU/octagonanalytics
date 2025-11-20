@@ -1,0 +1,64 @@
+{
+  "name": "Tsarukyan vs Hooker",
+  "date": "November 22, 2025",
+  "location": "ABHA Arena   Doha Qatar",
+  "url": "https://www.ufc.com/event/ufc-fight-night-november-22-2025",
+  "fights": [
+    {
+      "fighter1": "Arman Tsarukyan",
+      "fighter2": "Dan Hooker"
+    },
+    {
+      "fighter1": "Belal Muhammad",
+      "fighter2": "Ian Machado Garry"
+    },
+    {
+      "fighter1": "Volkan Oezdemir",
+      "fighter2": "Alonzo Menifield"
+    },
+    {
+      "fighter1": "Jack Hermansson",
+      "fighter2": "Myktybek Orolbai"
+    },
+    {
+      "fighter1": "Serghei Spivac",
+      "fighter2": "Shamil Gaziev"
+    },
+    {
+      "fighter1": "Alex Perez",
+      "fighter2": "Asu Almabayev"
+    },
+    {
+      "fighter1": "Bogdan Grad",
+      "fighter2": "Luke Riley"
+    },
+    {
+      "fighter1": "Abdulrakhman Yakhyaev",
+      "fighter2": "Rafael Cerqueira"
+    },
+    {
+      "fighter1": "Tagir Ulanbekov",
+      "fighter2": "Kyoji Horiguchi"
+    },
+    {
+      "fighter1": "Bekzat Almakhan",
+      "fighter2": "Aleksandre Topuria"
+    },
+    {
+      "fighter1": "Ismail Naurdiev",
+      "fighter2": "Ryan Loder"
+    },
+    {
+      "fighter1": "Nurullo Aliev",
+      "fighter2": "Shem Rock"
+    },
+    {
+      "fighter1": "Nicolas Dalby",
+      "fighter2": "Saygid Izagakhmaev"
+    },
+    {
+      "fighter1": "Marek Bujlo",
+      "fighter2": "Denzel Freeman"
+    }
+  ]
+}

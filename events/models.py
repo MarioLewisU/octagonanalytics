@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 from django.db import models
-from fighters.models import Fighter
 
 if TYPE_CHECKING:
     from fights.models import Fight
@@ -23,9 +22,3 @@ class Event(models.Model):
 
     def __str__(self):
         return self.name
-
-#Added for upcoming bouts on home.html // working finally
-class Match(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='matches')
-    fighter1 = models.ForeignKey(Fighter, on_delete=models.CASCADE, related_name='fighter1_matches')
-    fighter2 = models.ForeignKey(Fighter, on_delete=models.CASCADE, related_name='fighter2_matches')
